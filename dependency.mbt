@@ -17,17 +17,22 @@ pub(all) struct DependencyGraph {
 pub fn build_dependency_graph(steps : Array[ProofStep]) -> DependencyGraph {
   let edges : Array[DependencyEdge] = []
   let nodes : Array[Int] = []
+  let seen_nodes : Map[Int, Bool] = Map([])
   for step in steps {
-    if !nodes.contains(step.id) {
-      nodes.push(step.id)
-    }
-    for hint in step.hints {
-      let negative = hint < 0
-      let target = if negative { -hint } else { hint }
-      if !nodes.contains(target) {
-        nodes.push(target)
+    if !step.delete {
+      if !seen_nodes.contains(step.id) {
+        nodes.push(step.id)
+        seen_nodes[step.id] = true
       }
-      edges.push({ from: step.id, to: target, negative, })
+      for hint in step.hints {
+        let negative = hint < 0
+        let target = if negative { -hint } else { hint }
+        if !seen_nodes.contains(target) {
+          nodes.push(target)
+          seen_nodes[target] = true
+        }
+        edges.push({ from: step.id, to: target, negative, })
+      }
     }
   }
   nodes.sort()
@@ -89,8 +94,12 @@ pub fn DependencyGraph::has_edge(
 ///|
 pub fn DependencyGraph::roots(self : DependencyGraph) -> Array[Int] {
   let result : Array[Int] = []
+  let has_incoming : Map[Int, Bool] = Map([])
+  for edge in self.edges {
+    has_incoming[edge.to] = true
+  }
   for node in self.nodes {
-    if self.incoming(node).length() == 0 {
+    if !has_incoming.contains(node) {
       result.push(node)
     }
   }
@@ -100,8 +109,12 @@ pub fn DependencyGraph::roots(self : DependencyGraph) -> Array[Int] {
 ///|
 pub fn DependencyGraph::leaves(self : DependencyGraph) -> Array[Int] {
   let result : Array[Int] = []
+  let has_outgoing : Map[Int, Bool] = Map([])
+  for edge in self.edges {
+    has_outgoing[edge.from] = true
+  }
   for node in self.nodes {
-    if self.outgoing(node).length() == 0 {
+    if !has_outgoing.contains(node) {
       result.push(node)
     }
   }
@@ -121,17 +134,31 @@ pub fn DependencyGraph::negative_edge_count(self : DependencyGraph) -> Int {
 
 ///|
 pub fn dependency_depth(graph : DependencyGraph, node : Int) -> Int {
+  let adjacency : Map[Int, Array[Int]] = Map([])
+  for edge in graph.edges {
+    let targets = match adjacency.get(edge.from) {
+      Some(value) => value
+      None => []
+    }
+    targets.push(edge.to)
+    adjacency[edge.from] = targets
+  }
   let mut frontier : Array[Int] = [node]
-  let visited : Array[Int] = [node]
+  let visited : Map[Int, Bool] = Map([])
+  visited[node] = true
   let mut depth = 0
   while frontier.length() > 0 {
     let next : Array[Int] = []
     for current in frontier {
-      for edge in graph.outgoing(current) {
-        if !visited.contains(edge.to) {
-          visited.push(edge.to)
-          next.push(edge.to)
-        }
+      match adjacency.get(current) {
+        Some(targets) =>
+          for target in targets {
+            if !visited.contains(target) {
+              visited[target] = true
+              next.push(target)
+            }
+          }
+        None => ()
       }
     }
     if next.length() == 0 {

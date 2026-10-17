@@ -9,6 +9,9 @@ test "formula states and unit propagation" {
   assert_true(formula_state(assignment, formula) is True)
   assert_eq(clause_variables([1, -2, 2]), [1, 2])
   assert_true(clause_is_tautology([1, -2, 2]))
+  assert_true(!clause_is_tautology([-2147483647 - 1]))
+  assert_true(literal_state(assignment, -2147483647 - 1) is Unknown)
+  assert_true(!assign_literal(assignment, -2147483647 - 1))
 }
 
 ///|
@@ -27,6 +30,25 @@ test "diagnostics identify missing and deleted references" {
   assert_true(findings.length() >= 1)
   assert_true(diagnostics_have_errors(findings))
   assert_true(diagnostic_summary(findings).length() > 0)
+}
+
+///|
+test "deletion diagnostics use deleted IDs and preserve initial clause refs" {
+  let steps = parse_proof("9 1 0 1 0\n9 d 1 0\n10 0 1 0\n").unwrap()
+  let findings = diagnose_proof(steps)
+  let mut found_deleted = false
+  for finding in findings {
+    if finding.id == 1 {
+      match finding.kind {
+        DeletedBeforeUse => found_deleted = true
+        _ => ()
+      }
+    }
+  }
+  assert_true(found_deleted)
+  assert_true(!proof_has_forward_reference(steps))
+  assert_eq(referenced_clause_ids(steps), [1])
+  assert_eq(deleted_clause_ids(steps), [1])
 }
 
 ///|

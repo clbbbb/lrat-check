@@ -20,3 +20,10 @@ test "proof metrics detect forward references" {
   let normal = parse_proof("9 1 0 0\n10 0 9 0\n").unwrap()
   assert_true(!proof_has_forward_reference(normal))
 }
+
+///|
+test "deletion targets are not counted as proof dependencies" {
+  let steps = parse_proof("9 1 0 2 0\n10 d 2 0\n").unwrap()
+  assert_eq(referenced_clause_ids(steps), [2])
+  assert_eq(deleted_clause_ids(steps), [2])
+}

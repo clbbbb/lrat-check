@@ -180,6 +180,7 @@ pub(all) struct AuditSnapshot {
   additions : Int
   deletions : Int
   active_clause_ids : Array[Int]
+  seen_clause_ids : Array[Int]
   empty_clause_ids : Array[Int]
   missing_references : Array[(Int, Int)]
   deleted_references : Array[(Int, Int)]
@@ -325,6 +326,7 @@ pub(all) enum DiagnosticKind {
   MissingClause
   DeletedBeforeUse
   NonMonotonicId
+  DuplicateAdditionId
   EmptyProof
   NoEmptyAddition
   ExcessiveHints
@@ -440,7 +442,6 @@ pub fn ProofSession::active_tautology_count(Self) -> Int
 pub fn ProofSession::add_clause(Self, Array[Int]) -> Int
 pub fn ProofSession::add_clause_with_id(Self, Int, Array[Int]) -> Bool
 pub fn ProofSession::addition_count(Self) -> Int
-pub fn ProofSession::allocate_id(Self) -> Int
 pub fn ProofSession::contains_empty_clause(Self) -> Bool
 pub fn ProofSession::delete_clause(Self, Int) -> Bool
 pub fn ProofSession::deletion_count(Self) -> Int
@@ -494,10 +495,13 @@ pub(all) struct ProofSummary {
 }
 
 pub(all) enum ReplayError {
+  InvalidFormula
+  InvalidProof
   NonMonotonicId(Int)
   DuplicateClause(Int)
   UnknownDeletion(Int)
   InvalidLiteral(Int, Int)
+  InvalidClause(Int)
   MissingFinalEmptyClause
 }
 

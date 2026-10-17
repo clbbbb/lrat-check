@@ -75,6 +75,20 @@ test "bad DIMACS counts literals and unfinished clauses are rejected" {
   assert_true(parse_cnf("p cnf 2 1\n1\n") is Err(BadCnf(2)))
   assert_true(parse_cnf("p cnf 2 1\n1 -1 0\n") is Err(BadCnf(2)))
   assert_true(parse_cnf("p cnf 2 1\n3 0\n") is Err(BadCnf(2)))
+  assert_true(parse_cnf("p cnf 2 1\n-2147483648 0\n") is Err(_))
+}
+
+///|
+test "formula validation rejects externally constructed malformed clauses" {
+  let duplicate : Formula = { variable_count: 2, clauses: [[1, 1]], }
+  let complementary : Formula = { variable_count: 2, clauses: [[1, -1]], }
+  let minimum_int : Formula = {
+    variable_count: 2,
+    clauses: [[-2147483647 - 1]],
+  }
+  assert_true(duplicate.validate() is Err(BadCnf(0)))
+  assert_true(complementary.validate() is Err(BadCnf(0)))
+  assert_true(minimum_int.validate() is Err(BadCnf(0)))
 }
 
 ///|
@@ -83,6 +97,15 @@ test "proof parser rejects duplicate IDs, deletions, and integer overflow" {
   assert_true(verify(cnf, "3 0 1 2 0\n3 0 1 2 0\n") is Err(BadProof(2)))
   assert_true(verify(cnf, "3 d 9 0\n3 0 1 2 0\n") is Err(BadProof(1)))
   assert_true(verify(cnf, "999999999999 0 1 2 0\n") is Err(BadNumber(1)))
+  assert_true(parse_proof("0 0 0\n") is Err(BadProof(1)))
+  assert_true(parse_proof("1 -2147483648 0 1 0\n") is Err(_))
+}
+
+///|
+test "checker rejects decreasing IDs across deletion records" {
+  let cnf = "p cnf 0 2\n0\n0\n"
+  let proof = "3 d 1 0\n2 d 2 0\n"
+  assert_true(verify(cnf, proof) is Err(BadProof(2)))
 }
 
 ///|

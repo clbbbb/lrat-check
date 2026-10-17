@@ -66,9 +66,12 @@ pub fn ProofSession::get_clause(self : ProofSession, id : Int) -> Array[Int]? {
 }
 
 ///|
-pub fn ProofSession::allocate_id(self : ProofSession) -> Int {
+fn ProofSession::allocate_id(self : ProofSession) -> Int {
+  if self.next_id <= 0 {
+    return 0
+  }
   let result = self.next_id
-  self.next_id += 1
+  self.next_id = if result == 2147483647 { 0 } else { result + 1 }
   result
 }
 
@@ -78,6 +81,9 @@ pub fn ProofSession::add_clause(
   clause : Array[Int],
 ) -> Int {
   let id = self.allocate_id()
+  if id == 0 {
+    return 0
+  }
   self.active[id] = clause.copy()
   ignore(self.index.insert(id, clause))
   self.additions += 1
@@ -90,10 +96,13 @@ pub fn ProofSession::add_clause_with_id(
   id : Int,
   clause : Array[Int],
 ) -> Bool {
-  if id <= 0 || self.active.contains(id) || id < self.next_id {
+  if id <= 0 ||
+    self.next_id <= 0 ||
+    self.active.contains(id) ||
+    id < self.next_id {
     return false
   }
-  self.next_id = id + 1
+  self.next_id = if id == 2147483647 { 0 } else { id + 1 }
   self.active[id] = clause.copy()
   ignore(self.index.insert(id, clause))
   self.additions += 1
@@ -185,20 +194,17 @@ pub fn ProofSession::reset_counters(self : ProofSession) -> Unit {
 ///|
 pub fn ProofSession::snapshot(self : ProofSession) -> ProofSession {
   let active : Map[Int, Array[Int]] = Map([])
+  let index : LiteralIndex = { by_literal: Map([]), clauses: Map([]), }
   for entry in self.active.iter() {
     active[entry.0] = entry.1.copy()
+    ignore(index.insert(entry.0, entry.1))
   }
-  let formula_clauses : Array[Array[Int]] = []
-  for entry in active.iter() {
-    formula_clauses.push(entry.1.copy())
-  }
-  let formula : Formula = {
+  {
     variable_count: self.variable_count,
-    clauses: formula_clauses,
+    active,
+    index,
+    next_id: self.next_id,
+    additions: self.additions,
+    deletions: self.deletions,
   }
-  let result = ProofSession::from_formula(formula)
-  result.next_id = self.next_id
-  result.additions = self.additions
-  result.deletions = self.deletions
-  result
 }

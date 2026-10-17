@@ -48,7 +48,8 @@ pub fn parse_cnf(input : String) -> Result[Formula, CheckError] {
           return Err(BadCnf(line.number))
         }
       } else {
-        if literal > declared_vars ||
+        if literal == -2147483647 - 1 ||
+          literal > declared_vars ||
           -literal > declared_vars ||
           seen.contains(literal) ||
           seen.contains(-literal) {

@@ -23,6 +23,26 @@ test "empty formula metrics remain defined" {
   assert_true(formula_is_trivial(formula))
 }
 
+///|
+test "formula metrics stay sparse for large declared variable ranges" {
+  let formula : Formula = { variable_count: 1_000_000_000, clauses: [[7]], }
+  let metrics = measure_formula(formula)
+  assert_eq(metrics.variables, 1_000_000_000)
+  assert_eq(metrics.literals, 1)
+  assert_eq(formula_density(formula), 0)
+}
+
+///|
+test "unit conflict detection handles many units linearly" {
+  let clauses : Array[Array[Int]] = []
+  for variable in 1..<513 {
+    clauses.push([variable])
+  }
+  clauses.push([-512])
+  let formula : Formula = { variable_count: 512, clauses, }
+  assert_true(formula_has_unit_conflict(formula))
+}
+
 ///| Metrics are deterministic.
 
 ///| The test suite keeps this contract visible.

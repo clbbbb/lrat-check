@@ -45,11 +45,15 @@ pub fn summarize_proof(steps : Array[ProofStep]) -> ProofSummary {
 /// preflight a certificate before allocating its full checking state.
 pub fn referenced_clause_ids(steps : Array[ProofStep]) -> Array[Int] {
   let result : Array[Int] = []
+  let seen : Map[Int, Bool] = Map([])
   for step in steps {
-    for hint in step.hints {
-      let id = if hint < 0 { -hint } else { hint }
-      if !result.contains(id) {
-        result.push(id)
+    if !step.delete {
+      for hint in step.hints {
+        let id = if hint < 0 { -hint } else { hint }
+        if !seen.contains(id) {
+          result.push(id)
+          seen[id] = true
+        }
       }
     }
   }
@@ -72,7 +76,7 @@ pub fn deleted_clause_ids(steps : Array[ProofStep]) -> Array[Int] {
   let result : Array[Int] = []
   for step in steps {
     if step.delete {
-      result.push(step.id)
+      result.append(step.hints)
     }
   }
   result

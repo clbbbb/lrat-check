@@ -27,7 +27,7 @@ pub fn parse_proof(text : String) -> Result[Array[ProofStep], CheckError] {
       Ok(value) => value
       Err(error) => return Err(error)
     }
-    if id < previous {
+    if id <= 0 || id < previous {
       return Err(BadProof(line.number))
     }
     if id > previous {
@@ -79,7 +79,9 @@ pub fn parse_proof(text : String) -> Result[Array[ProofStep], CheckError] {
       } else if separator {
         hints.push(value)
       } else {
-        if seen.contains(value) || seen.contains(-value) {
+        if value == -2147483647 - 1 ||
+          seen.contains(value) ||
+          seen.contains(-value) {
           return Err(BadProof(line.number))
         }
         clause.push(value)

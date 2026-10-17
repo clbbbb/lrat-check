@@ -6,6 +6,7 @@ pub(all) struct AuditSnapshot {
   additions : Int
   deletions : Int
   active_clause_ids : Array[Int]
+  seen_clause_ids : Array[Int]
   empty_clause_ids : Array[Int]
   missing_references : Array[(Int, Int)]
   deleted_references : Array[(Int, Int)]
@@ -23,11 +24,13 @@ pub fn audit_prefix(
 ) -> AuditSnapshot {
   let active : Map[Int, Array[Int]] = Map([])
   let deleted_ids : Map[Int, Bool] = Map([])
+  let seen_ids : Map[Int, Bool] = Map([])
   let empty : Array[Int] = []
   for position in 0..<formula.clauses.length() {
     let id = position + 1
     let clause = formula.clauses[position].copy()
     active[id] = clause
+    seen_ids[id] = true
     if clause.length() == 0 {
       empty.push(id)
     }
@@ -76,6 +79,7 @@ pub fn audit_prefix(
         }
       }
       active[step.id] = step.clause.copy()
+      seen_ids[step.id] = true
       deleted_ids.remove(step.id)
       if step.clause.length() == 0 && !empty.contains(step.id) {
         empty.push(step.id)
@@ -87,12 +91,18 @@ pub fn audit_prefix(
     ids.push(entry.0)
   }
   ids.sort()
+  let seen_clause_ids : Array[Int] = []
+  for entry in seen_ids.iter() {
+    seen_clause_ids.push(entry.0)
+  }
+  seen_clause_ids.sort()
   empty.sort()
   {
     processed_steps: processed,
     additions,
     deletions,
     active_clause_ids: ids,
+    seen_clause_ids,
     empty_clause_ids: empty,
     missing_references: missing,
     deleted_references: deleted_refs,
@@ -361,7 +371,7 @@ pub fn AuditSnapshot::is_after_end(self : AuditSnapshot, total : Int) -> Bool {
 
 ///|
 pub fn AuditSnapshot::has_seen_id(self : AuditSnapshot, id : Int) -> Bool {
-  self.active_contains(id) || self.empty_clause_ids.contains(id)
+  self.seen_clause_ids.contains(id)
 }
 
 ///|

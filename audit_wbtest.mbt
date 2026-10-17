@@ -43,6 +43,8 @@ test "complete audit tracks final empty clause and reference integrity" {
   assert_eq(snapshot.deleted_count(), 7)
   assert_true(snapshot.has_live_empty_clause())
   assert_true(snapshot.active_contains(13))
+  assert_true(snapshot.has_seen_id(1))
+  assert_true(!snapshot.has_seen_id(999))
   assert_true(snapshot.all_references_resolved())
   assert_true(snapshot.active_id_at(-1) is None)
 }

@@ -24,3 +24,13 @@ test "empty dependency graph is well defined" {
   assert_eq(graph.leaves(), [])
   assert_eq(dependency_depth(graph, 1), 0)
 }
+
+///|
+test "deletion records do not become derivation dependencies" {
+  let steps = parse_proof("9 1 0 2 0\n10 d 2 0\n").unwrap()
+  let graph = build_dependency_graph(steps)
+  assert_eq(graph.edge_count(), 1)
+  assert_eq(graph.node_count(), 2)
+  assert_true(graph.has_edge(9, 2))
+  assert_true(!graph.has_edge(10, 2))
+}

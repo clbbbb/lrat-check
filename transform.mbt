@@ -146,7 +146,10 @@ pub fn resolve_clauses(
   right : Array[Int],
   pivot : Int,
 ) -> Array[Int]? {
-  if !has_literal(left, pivot) || !has_literal(right, -pivot) {
+  if pivot == 0 ||
+    pivot == -2147483647 - 1 ||
+    !has_literal(left, pivot) ||
+    !has_literal(right, -pivot) {
     return None
   }
   let result : Array[Int] = []

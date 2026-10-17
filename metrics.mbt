@@ -12,10 +12,7 @@ pub(all) struct FormulaMetrics {
 
 ///|
 pub fn measure_formula(formula : Formula) -> FormulaMetrics {
-  let mut literal_count = 0
-  for pair in formula.literal_occurrences() {
-    literal_count += pair.0 + pair.1
-  }
+  let literal_count = formula_literal_count(formula)
   {
     variables: formula.variable_count(),
     clauses: formula.clause_count(),
@@ -32,11 +29,16 @@ pub fn formula_density(formula : Formula) -> Int {
   if formula.variable_count() == 0 {
     return 0
   }
-  let mut literal_count = 0
-  for pair in formula.literal_occurrences() {
-    literal_count += pair.0 + pair.1
+  formula_literal_count(formula) * 1000 / formula.variable_count()
+}
+
+///|
+fn formula_literal_count(formula : Formula) -> Int {
+  let mut count = 0
+  for clause in formula.clauses {
+    count += clause.length()
   }
-  literal_count * 1000 / formula.variable_count()
+  count
 }
 
 ///|
@@ -66,8 +68,13 @@ pub fn formula_clause_ids(formula : Formula) -> Array[Int] {
 
 ///|
 pub fn formula_has_unit_conflict(formula : Formula) -> Bool {
-  let units = formula_unit_literals(formula)
-  for literal in units {
+  let units : Map[Int, Bool] = Map([])
+  for clause in formula.clauses {
+    if clause.length() == 1 && clause[0] != -2147483647 - 1 {
+      units[clause[0]] = true
+    }
+  }
+  for literal in units.keys() {
     if units.contains(-literal) {
       return true
     }

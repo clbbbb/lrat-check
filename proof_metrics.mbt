@@ -95,13 +95,13 @@ pub fn proof_metrics_summary(metrics : ProofMetrics) -> String {
 
 ///|
 pub fn proof_has_duplicate_addition_ids(steps : Array[ProofStep]) -> Bool {
-  let ids : Array[Int] = []
+  let ids : Map[Int, Bool] = Map([])
   for step in steps {
     if !step.delete {
       if ids.contains(step.id) {
         return true
       }
-      ids.push(step.id)
+      ids[step.id] = true
     }
   }
   false
@@ -111,13 +111,18 @@ pub fn proof_has_duplicate_addition_ids(steps : Array[ProofStep]) -> Bool {
 pub fn proof_has_forward_reference(steps : Array[ProofStep]) -> Bool {
   let known : Map[Int, Bool] = Map([])
   for step in steps {
-    for hint in step.hints {
-      let id = if hint < 0 { -hint } else { hint }
-      if !known.contains(id) {
-        return true
+    if step.delete {
+      for id in step.hints {
+        known[id] = false
       }
-    }
-    if !step.delete {
+    } else {
+      for hint in step.hints {
+        let id = if hint < 0 { -hint } else { hint }
+        match known.get(id) {
+          Some(_) => ()
+          None => if id >= step.id { return true }
+        }
+      }
       known[step.id] = true
     }
   }

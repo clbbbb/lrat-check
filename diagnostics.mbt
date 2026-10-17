@@ -4,6 +4,7 @@ pub(all) enum DiagnosticKind {
   MissingClause
   DeletedBeforeUse
   NonMonotonicId
+  DuplicateAdditionId
   EmptyProof
   NoEmptyAddition
   ExcessiveHints
@@ -38,11 +39,41 @@ pub fn diagnose_proof(steps : Array[ProofStep]) -> Array[Diagnostic] {
     })
   }
   let known : Map[Int, Bool] = Map([])
+  let added_ids : Map[Int, Bool] = Map([])
+  let mut previous_id = 0
   for step in steps {
+    if step.id <= 0 || step.id < previous_id {
+      findings.push({
+        kind: NonMonotonicId,
+        line: step.line,
+        id: step.id,
+        message: "step ID is lower than the preceding proof step",
+      })
+    }
+    if step.id > previous_id {
+      previous_id = step.id
+    }
     if step.delete {
-      known[step.id] = false
+      for deleted in step.hints {
+        if deleted >= step.id {
+          findings.push({
+            kind: MissingClause,
+            line: step.line,
+            id: deleted,
+            message: "deletion references a clause that has not been added yet",
+          })
+        }
+        known[deleted] = false
+      }
     } else {
-      known[step.id] = true
+      if added_ids.contains(step.id) {
+        findings.push({
+          kind: DuplicateAdditionId,
+          line: step.line,
+          id: step.id,
+          message: "addition reuses a clause ID",
+        })
+      }
       if step.hints.length() > 100000 {
         findings.push({
           kind: ExcessiveHints,
@@ -55,12 +86,14 @@ pub fn diagnose_proof(steps : Array[ProofStep]) -> Array[Diagnostic] {
         let referenced = if hint < 0 { -hint } else { hint }
         match known.get(referenced) {
           None =>
-            findings.push({
-              kind: MissingClause,
-              line: step.line,
-              id: referenced,
-              message: "hint references a clause not seen before",
-            })
+            if referenced >= step.id {
+              findings.push({
+                kind: MissingClause,
+                line: step.line,
+                id: referenced,
+                message: "hint references a clause that has not been added yet",
+              })
+            }
           Some(false) =>
             findings.push({
               kind: DeletedBeforeUse,
@@ -71,6 +104,8 @@ pub fn diagnose_proof(steps : Array[ProofStep]) -> Array[Diagnostic] {
           Some(true) => ()
         }
       }
+      known[step.id] = true
+      added_ids[step.id] = true
     }
   }
   findings
@@ -87,6 +122,7 @@ pub fn diagnostic_kind_name(kind : DiagnosticKind) -> String {
     MissingClause => "missing-clause"
     DeletedBeforeUse => "deleted-before-use"
     NonMonotonicId => "non-monotonic-id"
+    DuplicateAdditionId => "duplicate-addition-id"
     EmptyProof => "empty-proof"
     NoEmptyAddition => "no-empty-addition"
     ExcessiveHints => "excessive-hints"

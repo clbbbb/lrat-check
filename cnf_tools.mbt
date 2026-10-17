@@ -11,6 +11,9 @@ pub fn literal_state(
   assignment : Map[Int, Bool],
   literal : Int,
 ) -> LiteralState {
+  if literal == 0 || literal == -2147483647 - 1 {
+    return Unknown
+  }
   let variable = if literal < 0 { -literal } else { literal }
   match assignment.get(variable) {
     None => Unknown
@@ -89,6 +92,9 @@ pub fn unit_literal(assignment : Map[Int, Bool], clause : Array[Int]) -> Int? {
 
 ///|
 pub fn assign_literal(assignment : Map[Int, Bool], literal : Int) -> Bool {
+  if literal == 0 || literal == -2147483647 - 1 {
+    return false
+  }
   let variable = if literal < 0 { -literal } else { literal }
   let value = literal > 0
   match assignment.get(variable) {
@@ -128,10 +134,12 @@ pub fn propagate_units(assignment : Map[Int, Bool], formula : Formula) -> Bool {
 
 ///|
 pub fn clause_is_tautology(clause : Array[Int]) -> Bool {
+  let seen : Map[Int, Bool] = Map([])
   for literal in clause {
-    if has_literal(clause, -literal) {
+    if literal != -2147483647 - 1 && seen.contains(-literal) {
       return true
     }
+    seen[literal] = true
   }
   false
 }
@@ -139,10 +147,15 @@ pub fn clause_is_tautology(clause : Array[Int]) -> Bool {
 ///|
 pub fn clause_variables(clause : Array[Int]) -> Array[Int] {
   let result : Array[Int] = []
+  let seen : Map[Int, Bool] = Map([])
   for literal in clause {
+    if literal == -2147483647 - 1 {
+      continue
+    }
     let variable = if literal < 0 { -literal } else { literal }
-    if !result.contains(variable) {
+    if !seen.contains(variable) {
       result.push(variable)
+      seen[variable] = true
     }
   }
   result

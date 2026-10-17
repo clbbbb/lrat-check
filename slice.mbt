@@ -12,7 +12,13 @@ pub fn slice_proof(
   start : Int,
   stop : Int,
 ) -> ProofSlice {
-  let lower = if start < 0 { 0 } else { start }
+  let lower = if start < 0 {
+    0
+  } else if start > steps.length() {
+    steps.length()
+  } else {
+    start
+  }
   let upper = if stop > steps.length() { steps.length() } else { stop }
   let result : Array[ProofStep] = []
   if lower >= upper {
@@ -118,11 +124,8 @@ pub fn split_proof(steps : Array[ProofStep], width : Int) -> Array[ProofSlice] {
   }
   let mut start = 0
   while start < steps.length() {
-    let stop = if start + width > steps.length() {
-      steps.length()
-    } else {
-      start + width
-    }
+    let remaining = steps.length() - start
+    let stop = if width >= remaining { steps.length() } else { start + width }
     result.push(slice_proof(steps, start, stop))
     start = stop
   }

@@ -191,6 +191,7 @@ pub fn verify_formula(
     }
   }
   let mut last_id = formula.clauses.length()
+  let mut previous_record_id = last_id
   let mut additions = 0
   let mut deletions = 0
   let mut rat_additions = 0
@@ -206,9 +207,10 @@ pub fn verify_formula(
       Ok(value) => value
       Err(error) => return Err(error)
     }
-    if id <= 0 || id < last_id {
+    if id <= 0 || id < previous_record_id || id < last_id {
       return Err(BadProof(line.number))
     }
+    previous_record_id = id
     if line.words[1] == "d" {
       if line.words[line.words.length() - 1] != "0" {
         return Err(BadProof(line.number))

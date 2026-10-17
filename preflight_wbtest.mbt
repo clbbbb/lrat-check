@@ -33,3 +33,13 @@ test "preflight limit errors make a report fail" {
   assert_true(!report.is_ok())
   assert_true(!report.limits_checked)
 }
+
+///|
+test "preflight catches reused addition IDs and forward deletions" {
+  let duplicate = parse_proof("9 1 0 0\n9 0 9 0\n").unwrap()
+  assert_true(!preflight_default(duplicate).is_ok())
+  let deletion = parse_proof("9 d 99 0\n10 0 0\n").unwrap()
+  let report = preflight_default(deletion)
+  assert_true(!report.is_ok())
+  assert_true(report.diagnostic_count() > 0)
+}

@@ -67,3 +67,28 @@ test "session returns sorted active IDs and clauses" {
   assert_eq(clauses[0], (1, [1]))
   assert_eq(clauses[2], (12, [-2]))
 }
+
+///|
+test "session snapshot preserves sparse clause IDs and index entries" {
+  let formula = parse_cnf("p cnf 2 1\n1 0\n").unwrap()
+  let session = ProofSession::from_formula(formula)
+  assert_true(session.add_clause_with_id(8, [-2]))
+  assert_true(session.delete_clause(1))
+  let copy = session.snapshot()
+  assert_eq(copy.active_ids(), [8])
+  assert_eq(copy.get_clause(8), Some([-2]))
+  assert_eq(copy.ids_for_literal(-2), [8])
+  assert_true(copy.index_is_consistent())
+  assert_eq(copy.active_count(), 1)
+}
+
+///|
+test "session ID allocation stops cleanly at integer exhaustion" {
+  let formula = parse_cnf("p cnf 1 1\n1 0\n").unwrap()
+  let session = ProofSession::from_formula(formula)
+  assert_true(session.add_clause_with_id(2147483647, [-1]))
+  assert_eq(session.next_id(), 0)
+  assert_eq(session.add_clause([1]), 0)
+  assert_eq(session.active_count(), 2)
+  assert_true(session.index_is_consistent())
+}

@@ -23,7 +23,7 @@ pub fn Formula::validate(self : Formula) -> Result[Unit, CheckError] {
         literal > self.variable_count ||
         -literal > self.variable_count ||
         seen.contains(literal) ||
-        has_literal(clause, -literal) {
+        seen.contains(-literal) {
         return Err(BadCnf(0))
       }
       seen[literal] = true

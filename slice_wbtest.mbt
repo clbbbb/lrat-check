@@ -22,4 +22,16 @@ test "proof splitting covers every step exactly once" {
   assert_eq(slices[0].first_id(), Some(1))
   assert_eq(slices[1].last_id(), Some(4))
   assert_true(split_proof(steps, 0).length() == 0)
+  assert_eq(split_proof(steps, 2147483647).length(), 1)
+}
+
+///|
+test "proof slices clamp both ends to the available step range" {
+  let steps = parse_proof("1 1 0 0\n2 0 1 0\n").unwrap()
+  let after_end = slice_proof(steps, 99, 120)
+  assert_eq(after_end.length(), 0)
+  assert_eq(after_end.first_id(), None)
+  let before_start = slice_proof(steps, -10, 1)
+  assert_eq(before_start.length(), 1)
+  assert_eq(before_start.first_id(), Some(1))
 }
