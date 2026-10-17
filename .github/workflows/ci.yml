@@ -21,5 +21,5 @@ jobs:
         run: moon test --deny-warn
       - name: Build
         run: moon build --release --deny-warn
-      - name: Run example
-        run: moon run cmd/main -- examples/paper.cnf examples/paper.lrat
+      - name: Cross-check with drat-trim LRAT checker
+        run: bash scripts/cross_check_lrat.sh

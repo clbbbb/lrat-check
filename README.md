@@ -20,6 +20,13 @@ The example is Figure 2 from the [LRAT paper](https://arxiv.org/abs/1612.02353).
 It prints a `VERIFIED UNSAT` summary. The invalid example reports its bad hint
 and exits with status 1.
 
+CI also cross-checks these two certificates with the independent `lrat-check`
+program from [drat-trim](https://github.com/marijnheule/drat-trim), pinned to
+commit `2e3b2dc0ecf938addbd779d42877b6ed69d9a985`. Both checkers must accept
+`paper.lrat` and reject `bad.lrat`. The checker is downloaded to a temporary
+directory and is not included in this repository. Its upstream source is
+MIT-licensed.
+
 ## Checked format
 
 The library validates DIMACS headers, variable bounds, clause counts,
