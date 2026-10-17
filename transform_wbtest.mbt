@@ -14,6 +14,9 @@ test "duplicate and subsumed clauses are removed" {
   let simplified = simplify_formula(formula)
   assert_eq(simplified.clause_count(), 2)
   assert_true(formula_is_simplified(simplified))
+  let duplicates = parse_cnf("p cnf 1 2\n1 0\n1 0\n").unwrap()
+  assert_true(!formula_is_simplified(duplicates))
+  assert_true(formula_is_simplified(remove_duplicate_clauses(duplicates)))
 }
 
 ///|

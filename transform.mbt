@@ -38,10 +38,12 @@ pub fn clause_equal(left : Array[Int], right : Array[Int]) -> Bool {
 
 ///|
 pub fn clause_subset(subset : Array[Int], superset : Array[Int]) -> Bool {
-  let a = normalize_clause(subset)
-  let b = normalize_clause(superset)
-  for literal in a {
-    if !b.contains(literal) {
+  let members : Map[Int, Bool] = Map([])
+  for literal in superset {
+    members[literal] = true
+  }
+  for literal in subset {
+    if !members.contains(literal) {
       return false
     }
   }
@@ -230,12 +232,18 @@ pub fn formula_contains_clause(formula : Formula, target : Array[Int]) -> Bool {
 
 ///|
 pub fn formula_is_simplified(formula : Formula) -> Bool {
-  for clause in formula.clauses {
+  for index in 0..<formula.clauses.length() {
+    let clause = formula.clauses[index]
     if clause_is_tautology(clause) || clause_subsumed(formula, clause) {
       return false
     }
     if clause.length() != normalize_clause(clause).length() {
       return false
+    }
+    for previous in 0..<index {
+      if clause_equal(clause, formula.clauses[previous]) {
+        return false
+      }
     }
   }
   true
