@@ -1,0 +1,12 @@
+// import {
+//   "clbbb/lrat-check" @lib,
+// }
+
+import {
+  "clbbbb/lrat-check" @lrat,
+  "moonbitlang/core/env",
+  "moonbitlang/x/fs",
+  "moonbitlang/x/sys",
+}
+
+pkgtype(kind: "executable")
