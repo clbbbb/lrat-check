@@ -30,9 +30,12 @@ the failing clause ID.
 
 The current scope is textual LRAT. Binary LRAT, DRAT, LPR, proof generation,
 and formal verification of this implementation are outside the first release.
-RAT coverage uses an inverted literal index. Structural audit can inspect a
-proof prefix and report active clauses, empty clauses, and missing or deleted
-references. An audit does not replace semantic LRAT verification.
+RAT coverage uses an inverted literal index and hash membership for listed
+candidate clauses, so coverage scales with the clauses containing the pivot
+instead of comparing every pair of candidates. Deleted clauses are removed
+from the active-clause table. Structural audit can inspect a proof prefix and
+report active clauses, empty clauses, and missing or deleted references. An
+audit does not replace semantic LRAT verification.
 The lifetime report counts references per clause and measures the peak number
 of active clauses; it is useful for comparing proof traces, not for validating
 their derivations.

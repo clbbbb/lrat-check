@@ -84,3 +84,44 @@ test "proof parser rejects duplicate IDs, deletions, and integer overflow" {
   assert_true(verify(cnf, "3 d 9 0\n3 0 1 2 0\n") is Err(BadProof(1)))
   assert_true(verify(cnf, "999999999999 0 1 2 0\n") is Err(BadNumber(1)))
 }
+
+///|
+test "RAT coverage scales across many complementary clauses" {
+  let candidate_count = 512
+  let cnf = StringBuilder()
+  cnf.write_string("p cnf ")
+  cnf.write_string((candidate_count + 1).to_string())
+  cnf.write_string(" ")
+  cnf.write_string((candidate_count * 3).to_string())
+  cnf.write_char('\n')
+  for offset in 0..<candidate_count {
+    let variable = offset + 2
+    cnf.write_string(variable.to_string())
+    cnf.write_string(" 0\n")
+    cnf.write_string((-variable).to_string())
+    cnf.write_string(" 0\n")
+    cnf.write_string("-1 ")
+    cnf.write_string(variable.to_string())
+    cnf.write_string(" 0\n")
+  }
+  let addition_id = candidate_count * 3 + 1
+  let proof = StringBuilder()
+  proof.write_string(addition_id.to_string())
+  proof.write_string(" 1 0")
+  for offset in 0..<candidate_count {
+    let candidate_id = offset * 3 + 3
+    proof.write_string(" -")
+    proof.write_string(candidate_id.to_string())
+    proof.write_string(" ")
+    proof.write_string((offset * 3 + 1).to_string())
+    proof.write_string(" ")
+    proof.write_string((offset * 3 + 2).to_string())
+  }
+  proof.write_string(" 0\n")
+  proof.write_string((addition_id + 1).to_string())
+  proof.write_string(" 0 1 2 0\n")
+  match verify(cnf.to_string(), proof.to_string()) {
+    Ok(stats) => assert_eq(stats.rat_additions, 1)
+    Err(_) => assert_true(false)
+  }
+}

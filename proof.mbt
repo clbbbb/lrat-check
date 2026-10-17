@@ -5,11 +5,8 @@ priv struct RatCase {
 }
 
 ///|
-fn active_clause(clauses : Map[Int, Array[Int]?], id : Int) -> Array[Int]? {
-  match clauses.get(id) {
-    Some(clause) => clause
-    None => None
-  }
+fn active_clause(clauses : Map[Int, Array[Int]], id : Int) -> Array[Int]? {
+  clauses.get(id)
 }
 
 ///|
@@ -40,7 +37,7 @@ fn assume_false(assignment : Map[Int, Int], literal : Int) -> Bool {
 /// Each positive hint must be unit under prior assignments, or the final
 /// conflict clause. Merely naming arbitrary clauses cannot certify a proof.
 fn follow_hints(
-  clauses : Map[Int, Array[Int]?],
+  clauses : Map[Int, Array[Int]],
   assignment : Map[Int, Int],
   hints : Array[Int],
   line : Int,
@@ -75,7 +72,7 @@ fn follow_hints(
 
 ///|
 fn verify_addition(
-  clauses : Map[Int, Array[Int]?],
+  clauses : Map[Int, Array[Int]],
   index : LiteralIndex,
   clause : Array[Int],
   hints : Array[Int],
@@ -83,6 +80,7 @@ fn verify_addition(
 ) -> Result[Bool, CheckError] {
   let common : Array[Int] = []
   let cases : Array[RatCase] = []
+  let case_ids : Map[Int, Bool] = Map([])
   let mut current = -1
   for hint in hints {
     if hint < 0 {
@@ -91,6 +89,7 @@ fn verify_addition(
         return Err(BadHint(line, id))
       }
       cases.push({ id, hints: [], })
+      case_ids[id] = true
       current = id
     } else if hint > 0 {
       if cases.length() == 0 {
@@ -138,11 +137,18 @@ fn verify_addition(
       }
     }
     if !tautological {
-      let all_hints : Array[Int] = common.copy()
-      all_hints.append(candidate.hints)
-      let conflict = match follow_hints(clauses, assignment, all_hints, line) {
+      let common_conflict = match
+        follow_hints(clauses, assignment, common, line) {
         Ok(value) => value
         Err(error) => return Err(error)
+      }
+      let conflict = if common_conflict {
+        true
+      } else {
+        match follow_hints(clauses, assignment, candidate.hints, line) {
+          Ok(value) => value
+          Err(error) => return Err(error)
+        }
       }
       if !conflict {
         return Err(BadHint(line, candidate.id))
@@ -153,14 +159,9 @@ fn verify_addition(
   // resolvent. The index keeps this completeness check proportional to that
   // set rather than the entire proof history.
   for id in index.ids_for(-pivot) {
-    let mut covered = false
-    for candidate in cases {
-      if candidate.id == id {
-        covered = true
-        break
-      }
-    }
-    if !covered {
+    // A hash lookup avoids comparing every required clause with every listed
+    // RAT case when a pivot occurs in many active clauses.
+    if !case_ids.contains(id) {
       return Err(BadHint(line, id))
     }
   }
@@ -178,13 +179,13 @@ pub fn verify_formula(
     Ok(_) => ()
     Err(error) => return Err(error)
   }
-  let clauses : Map[Int, Array[Int]?] = Map([])
+  let clauses : Map[Int, Array[Int]] = Map([])
   let literal_index = LiteralIndex::new(formula)
   let mut initial_empty = false
   for position in 0..<formula.clauses.length() {
     let id = position + 1
     let clause = formula.clauses[position]
-    clauses[id] = Some(clause)
+    clauses[id] = clause
     if clause.length() == 0 {
       initial_empty = true
     }
@@ -220,7 +221,7 @@ pub fn verify_formula(
         if deleted <= 0 || active_clause(clauses, deleted) is None {
           return Err(BadProof(line.number))
         }
-        clauses[deleted] = None
+        clauses.remove(deleted)
         ignore(literal_index.remove(deleted))
         deletions += 1
       }
@@ -268,7 +269,7 @@ pub fn verify_formula(
     if rat {
       rat_additions += 1
     }
-    clauses[id] = Some(clause)
+    clauses[id] = clause
     ignore(literal_index.insert(id, clause))
     last_id = id
     additions += 1
