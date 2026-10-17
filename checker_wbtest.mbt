@@ -125,3 +125,31 @@ test "RAT coverage scales across many complementary clauses" {
     Err(_) => assert_true(false)
   }
 }
+
+///|
+test "long-clause parsing uses set-based duplicate detection" {
+  let clause_size = 1024
+  let cnf = StringBuilder()
+  cnf.write_string("p cnf 1024 1\n")
+  let proof = StringBuilder()
+  proof.write_string("1025")
+  for literal in 1..<(clause_size + 1) {
+    cnf.write_string(literal.to_string())
+    cnf.write_char(' ')
+    proof.write_char(' ')
+    proof.write_string(literal.to_string())
+  }
+  cnf.write_string("0\n")
+  proof.write_string(" 0 0\n")
+  assert_eq(
+    parse_cnf(cnf.to_string()).unwrap().clauses[0].length(),
+    clause_size,
+  )
+  assert_eq(
+    parse_proof(proof.to_string()).unwrap()[0].clause.length(),
+    clause_size,
+  )
+
+  let duplicate = cnf.to_string().replace(old="0\n", new="1024 0\n")
+  assert_true(parse_cnf(duplicate) is Err(BadCnf(2)))
+}

@@ -6,6 +6,7 @@ pub fn parse_cnf(input : String) -> Result[Formula, CheckError] {
   let mut declared_clauses = -1
   let clauses : Array[Array[Int]] = []
   let clause : Array[Int] = []
+  let mut seen : Map[Int, Bool] = Map([])
   let mut final_line = 1
   for line in source_lines(input) {
     final_line = line.number
@@ -42,17 +43,19 @@ pub fn parse_cnf(input : String) -> Result[Formula, CheckError] {
       if literal == 0 {
         clauses.push(clause.copy())
         clause.clear()
+        seen = Map([])
         if clauses.length() > declared_clauses {
           return Err(BadCnf(line.number))
         }
       } else {
         if literal > declared_vars ||
           -literal > declared_vars ||
-          has_literal(clause, literal) ||
-          has_literal(clause, -literal) {
+          seen.contains(literal) ||
+          seen.contains(-literal) {
           return Err(BadCnf(line.number))
         }
         clause.push(literal)
+        seen[literal] = true
       }
     }
   }

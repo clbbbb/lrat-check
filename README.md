@@ -33,7 +33,9 @@ and formal verification of this implementation are outside the first release.
 RAT coverage uses an inverted literal index and hash membership for listed
 candidate clauses, so coverage scales with the clauses containing the pivot
 instead of comparing every pair of candidates. Deleted clauses are removed
-from the active-clause table. Structural audit can inspect a proof prefix and
+from the active-clause table. DIMACS and LRAT long-clause duplicate checks use
+per-clause literal sets rather than rescanning the clause for every literal.
+Structural audit can inspect a proof prefix and
 report active clauses, empty clauses, and missing or deleted references. An
 audit does not replace semantic LRAT verification.
 The lifetime report counts references per clause and measures the peak number

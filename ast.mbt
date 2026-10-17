@@ -58,6 +58,7 @@ pub fn parse_proof(text : String) -> Result[Array[ProofStep], CheckError] {
       continue
     }
     let clause : Array[Int] = []
+    let seen : Map[Int, Bool] = Map([])
     let hints : Array[Int] = []
     let mut separator = false
     let mut ended = false
@@ -78,10 +79,11 @@ pub fn parse_proof(text : String) -> Result[Array[ProofStep], CheckError] {
       } else if separator {
         hints.push(value)
       } else {
-        if has_literal(clause, value) || has_literal(clause, -value) {
+        if seen.contains(value) || seen.contains(-value) {
           return Err(BadProof(line.number))
         }
         clause.push(value)
+        seen[value] = true
       }
     }
     if !ended {

@@ -231,6 +231,7 @@ pub fn verify_formula(
       return Err(BadProof(line.number))
     }
     let clause : Array[Int] = []
+    let seen : Map[Int, Bool] = Map([])
     let hints : Array[Int] = []
     let mut separator = false
     let mut ended = false
@@ -249,11 +250,12 @@ pub fn verify_formula(
         }
       } else if !separator {
         if value == -2147483647 - 1 ||
-          has_literal(clause, value) ||
-          has_literal(clause, -value) {
+          seen.contains(value) ||
+          seen.contains(-value) {
           return Err(BadProof(line.number))
         }
         clause.push(value)
+        seen[value] = true
       } else {
         hints.push(value)
       }
