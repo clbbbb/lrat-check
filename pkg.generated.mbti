@@ -1,0 +1,515 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "clbbbb/lrat-check"
+
+// Values
+pub fn added_clause_ids(Array[ProofStep]) -> Array[Int]
+
+pub fn all_resolvents(Array[Int], Array[Int]) -> Array[Array[Int]]
+
+pub fn analyze_clause_lifetimes(Formula, Array[ProofStep]) -> LifetimeReport
+
+pub fn apply_assignment(Formula, Map[Int, Bool]) -> Formula
+
+pub fn assign_literal(Map[Int, Bool], Int) -> Bool
+
+pub fn audit_all(Formula, Array[ProofStep]) -> AuditSnapshot
+
+pub fn audit_at_line(Formula, Array[ProofStep], Int) -> AuditSnapshot
+
+pub fn audit_prefix(Formula, Array[ProofStep], Int) -> AuditSnapshot
+
+pub fn build_dependency_graph(Array[ProofStep]) -> DependencyGraph
+
+pub fn check_limits(Array[ProofStep], CheckLimits) -> Result[Unit, LimitViolation]
+
+pub fn clause_contains_literal(Array[Int], Int) -> Bool
+
+pub fn clause_equal(Array[Int], Array[Int]) -> Bool
+
+pub fn clause_is_tautology(Array[Int]) -> Bool
+
+pub fn clause_state(Map[Int, Bool], Array[Int]) -> LiteralState
+
+pub fn clause_subset(Array[Int], Array[Int]) -> Bool
+
+pub fn clause_subsumed(Formula, Array[Int]) -> Bool
+
+pub fn clause_variables(Array[Int]) -> Array[Int]
+
+pub fn combine_preflight_reports(PreflightReport, PreflightReport) -> PreflightReport
+
+pub fn deleted_clause_ids(Array[ProofStep]) -> Array[Int]
+
+pub fn dependency_depth(DependencyGraph, Int) -> Int
+
+pub fn dependency_summary(DependencyGraph) -> String
+
+pub fn diagnose_proof(Array[ProofStep]) -> Array[Diagnostic]
+
+pub fn diagnostic_kind_name(DiagnosticKind) -> String
+
+pub fn diagnostic_summary(Array[Diagnostic]) -> String
+
+pub fn diagnostics_have_errors(Array[Diagnostic]) -> Bool
+
+pub fn formula_clause_ids(Formula) -> Array[Int]
+
+pub fn formula_contains_clause(Formula, Array[Int]) -> Bool
+
+pub fn formula_density(Formula) -> Int
+
+pub fn formula_has_unit_conflict(Formula) -> Bool
+
+pub fn formula_is_simplified(Formula) -> Bool
+
+pub fn formula_is_trivial(Formula) -> Bool
+
+pub fn formula_max_clause_size(Formula) -> Int
+
+pub fn formula_min_clause_size(Formula) -> Int
+
+pub fn formula_resolvents(Formula, Int, Int) -> Array[Array[Int]]
+
+pub fn formula_state(Map[Int, Bool], Formula) -> LiteralState
+
+pub fn formula_tautology_count(Formula) -> Int
+
+pub fn formula_unit_count(Formula) -> Int
+
+pub fn formula_unit_literals(Formula) -> Array[Int]
+
+pub fn index_clause_count(LiteralIndex) -> Int
+
+pub fn index_literal_count(LiteralIndex) -> Int
+
+pub fn is_hint_free(Array[ProofStep]) -> Bool
+
+pub fn limit_violation_name(LimitViolation) -> String
+
+pub fn literal_state(Map[Int, Bool], Int) -> LiteralState
+
+pub fn measure_formula(Formula) -> FormulaMetrics
+
+pub fn measure_proof(Array[ProofStep]) -> ProofMetrics
+
+pub fn normalize_clause(Array[Int]) -> Array[Int]
+
+pub fn normalize_formula(Formula) -> Formula
+
+pub fn parse_cnf(String) -> Result[Formula, CheckError]
+
+pub fn parse_proof(String) -> Result[Array[ProofStep], CheckError]
+
+pub fn preflight_default(Array[ProofStep]) -> PreflightReport
+
+pub fn preflight_proof(Array[ProofStep], CheckLimits) -> PreflightReport
+
+pub fn proof_additions(Array[ProofStep]) -> Int
+
+pub fn proof_clause_density(ProofMetrics) -> Int
+
+pub fn proof_deletions(Array[ProofStep]) -> Int
+
+pub fn proof_has_duplicate_addition_ids(Array[ProofStep]) -> Bool
+
+pub fn proof_has_empty_addition(Array[ProofStep]) -> Bool
+
+pub fn proof_has_forward_reference(Array[ProofStep]) -> Bool
+
+pub fn proof_hint_density(ProofMetrics) -> Int
+
+pub fn proof_is_minimal_shape(ProofMetrics) -> Bool
+
+pub fn proof_is_well_formed(Array[ProofStep]) -> Bool
+
+pub fn proof_max_id(Array[ProofStep]) -> Int
+
+pub fn proof_metrics_summary(ProofMetrics) -> String
+
+pub fn proof_reference_ratio(PreflightReport, Array[ProofStep]) -> Int
+
+pub fn propagate_units(Map[Int, Bool], Formula) -> Bool
+
+pub fn rat_candidates(LiteralIndex, Int) -> Array[Int]
+
+pub fn referenced_clause_ids(Array[ProofStep]) -> Array[Int]
+
+pub fn remove_duplicate_clauses(Formula) -> Formula
+
+pub fn remove_subsumed_clauses(Formula) -> Formula
+
+pub fn render_clause(Array[Int]) -> String
+
+pub fn render_dimacs(Formula) -> String
+
+pub fn render_proof(Array[ProofStep]) -> String
+
+pub fn replay(String, String) -> Result[ReplayResult, ReplayError]
+
+pub fn replay_error_name(ReplayError) -> String
+
+pub fn replay_structure(Formula, Array[ProofStep]) -> Result[ReplayResult, ReplayError]
+
+pub fn resolve_clauses(Array[Int], Array[Int], Int) -> Array[Int]?
+
+pub fn simplify_formula(Formula) -> Formula
+
+pub fn slice_proof(Array[ProofStep], Int, Int) -> ProofSlice
+
+pub fn slices_have_contiguous_ranges(Array[ProofSlice]) -> Bool
+
+pub fn split_proof(Array[ProofStep], Int) -> Array[ProofSlice]
+
+pub fn summarize_proof(Array[ProofStep]) -> ProofSummary
+
+pub fn total_slice_steps(Array[ProofSlice]) -> Int
+
+pub fn unit_literal(Map[Int, Bool], Array[Int]) -> Int?
+
+pub fn unit_simplify(Formula) -> Result[Formula, Unit]
+
+pub fn verify(String, String) -> Result[CheckStats, CheckError]
+
+pub fn verify_formula(Formula, String) -> Result[CheckStats, CheckError]
+
+// Errors
+
+// Types and methods
+pub(all) struct AuditSnapshot {
+  processed_steps : Int
+  additions : Int
+  deletions : Int
+  active_clause_ids : Array[Int]
+  empty_clause_ids : Array[Int]
+  missing_references : Array[(Int, Int)]
+  deleted_references : Array[(Int, Int)]
+  last_step_id : Int
+}
+pub fn AuditSnapshot::active_change_count(Self, Self) -> Int
+pub fn AuditSnapshot::active_contains(Self, Int) -> Bool
+pub fn AuditSnapshot::active_contains_all(Self, Array[Int]) -> Bool
+pub fn AuditSnapshot::active_count(Self) -> Int
+pub fn AuditSnapshot::active_density(Self) -> Int
+pub fn AuditSnapshot::active_difference(Self, Array[Int]) -> Array[Int]
+pub fn AuditSnapshot::active_id_at(Self, Int) -> Int?
+pub fn AuditSnapshot::active_id_checksum(Self) -> Int
+pub fn AuditSnapshot::active_id_sum(Self) -> Int
+pub fn AuditSnapshot::active_ids(Self) -> Array[Int]
+pub fn AuditSnapshot::active_intersection(Self, Array[Int]) -> Array[Int]
+pub fn AuditSnapshot::active_range(Self) -> (Int, Int)?
+pub fn AuditSnapshot::added_clause_ids(Self, Array[ProofStep]) -> Array[Int]
+pub fn AuditSnapshot::added_empty_clause(Self, Int) -> Bool
+pub fn AuditSnapshot::added_since(Self, Self) -> Int
+pub fn AuditSnapshot::addition_count(Self) -> Int
+pub fn AuditSnapshot::all_references_resolved(Self) -> Bool
+pub fn AuditSnapshot::completion_ratio(Self, Int) -> Int
+pub fn AuditSnapshot::deleted_clause_ids(Self, Array[ProofStep]) -> Array[Int]
+pub fn AuditSnapshot::deleted_count(Self) -> Int
+pub fn AuditSnapshot::deleted_reference_ids(Self) -> Array[Int]
+pub fn AuditSnapshot::deleted_since(Self, Self) -> Int
+pub fn AuditSnapshot::empty_clause_was_added(Self) -> Bool
+pub fn AuditSnapshot::empty_count(Self) -> Int
+pub fn AuditSnapshot::empty_id_at(Self, Int) -> Int?
+pub fn AuditSnapshot::empty_id_checksum(Self) -> Int
+pub fn AuditSnapshot::empty_id_sum(Self) -> Int
+pub fn AuditSnapshot::empty_ids(Self) -> Array[Int]
+pub fn AuditSnapshot::empty_ratio(Self) -> Int
+pub fn AuditSnapshot::fingerprint(Self) -> String
+pub fn AuditSnapshot::first_deleted_reference(Self) -> (Int, Int)?
+pub fn AuditSnapshot::first_missing(Self) -> (Int, Int)?
+pub fn AuditSnapshot::has_active_clause(Self) -> Bool
+pub fn AuditSnapshot::has_any_activity(Self) -> Bool
+pub fn AuditSnapshot::has_clause_lifetimes(Self) -> Bool
+pub fn AuditSnapshot::has_deleted_references(Self) -> Bool
+pub fn AuditSnapshot::has_empty_clause(Self) -> Bool
+pub fn AuditSnapshot::has_live_empty_clause(Self) -> Bool
+pub fn AuditSnapshot::has_live_empty_clause_id(Self, Int) -> Bool
+pub fn AuditSnapshot::has_missing_references(Self) -> Bool
+pub fn AuditSnapshot::has_progress(Self) -> Bool
+pub fn AuditSnapshot::has_reference_error_on(Self, Int) -> Bool
+pub fn AuditSnapshot::has_reference_errors(Self) -> Bool
+pub fn AuditSnapshot::has_seen_id(Self, Int) -> Bool
+pub fn AuditSnapshot::is_after_end(Self, Int) -> Bool
+pub fn AuditSnapshot::is_before_start(Self) -> Bool
+pub fn AuditSnapshot::is_complete(Self, Array[ProofStep]) -> Bool
+pub fn AuditSnapshot::is_consistent(Self) -> Bool
+pub fn AuditSnapshot::is_empty_state(Self) -> Bool
+pub fn AuditSnapshot::is_prefix_of(Self, Self) -> Bool
+pub fn AuditSnapshot::is_structurally_clean(Self) -> Bool
+pub fn AuditSnapshot::is_terminal(Self, Int) -> Bool
+pub fn AuditSnapshot::is_valid_limit(Self, Int) -> Bool
+pub fn AuditSnapshot::last_id(Self) -> Int
+pub fn AuditSnapshot::line_span(Self) -> (Int, Int)?
+pub fn AuditSnapshot::live_empty_count(Self) -> Int
+pub fn AuditSnapshot::live_empty_ids(Self) -> Array[Int]
+pub fn AuditSnapshot::maximum_active_id(Self) -> Int
+pub fn AuditSnapshot::minimum_active_id(Self) -> Int
+pub fn AuditSnapshot::missing_ids(Self) -> Array[Int]
+pub fn AuditSnapshot::processed_count(Self) -> Int
+pub fn AuditSnapshot::progress_text(Self, Int) -> String
+pub fn AuditSnapshot::reference_at(Self, Int) -> (Int, Int)?
+pub fn AuditSnapshot::reference_error_count(Self) -> Int
+pub fn AuditSnapshot::reference_lines(Self) -> Array[Int]
+pub fn AuditSnapshot::reference_ratio(Self) -> Int
+pub fn AuditSnapshot::reference_summary(Self) -> String
+pub fn AuditSnapshot::references_on_line(Self, Int) -> Int
+pub fn AuditSnapshot::same_active_state(Self, Self) -> Bool
+pub fn AuditSnapshot::same_empty_state(Self, Self) -> Bool
+pub fn AuditSnapshot::state_label(Self) -> String
+pub fn AuditSnapshot::step_kind_count(Self) -> Int
+pub fn AuditSnapshot::summary(Self) -> String
+
+pub(all) enum CheckError {
+  BadNumber(Int)
+  BadCnf(Int)
+  BadProof(Int)
+  BadHint(Int, Int)
+  MissingEmptyClause
+}
+
+pub(all) struct CheckLimits {
+  max_steps : Int
+  max_clause_literals : Int
+  max_hints_per_step : Int
+  max_clause_id : Int
+}
+pub fn CheckLimits::default() -> Self
+
+pub(all) struct CheckStats {
+  initial_clauses : Int
+  additions : Int
+  deletions : Int
+  rat_additions : Int
+}
+
+pub(all) struct ClauseLifetime {
+  id : Int
+  initial : Bool
+  added_at : Int
+  deleted_at : Int?
+  use_count : Int
+  last_used_at : Int?
+}
+pub fn ClauseLifetime::is_active(Self) -> Bool
+pub fn ClauseLifetime::is_unused(Self) -> Bool
+pub fn ClauseLifetime::lifetime_steps(Self, Int) -> Int
+pub fn ClauseLifetime::was_referenced(Self) -> Bool
+
+pub(all) struct DependencyEdge {
+  from : Int
+  to : Int
+  negative : Bool
+}
+
+pub(all) struct DependencyGraph {
+  edges : Array[DependencyEdge]
+  nodes : Array[Int]
+}
+pub fn DependencyGraph::edge_count(Self) -> Int
+pub fn DependencyGraph::has_edge(Self, Int, Int) -> Bool
+pub fn DependencyGraph::incoming(Self, Int) -> Array[DependencyEdge]
+pub fn DependencyGraph::leaves(Self) -> Array[Int]
+pub fn DependencyGraph::negative_edge_count(Self) -> Int
+pub fn DependencyGraph::node_count(Self) -> Int
+pub fn DependencyGraph::outgoing(Self, Int) -> Array[DependencyEdge]
+pub fn DependencyGraph::roots(Self) -> Array[Int]
+
+pub(all) struct Diagnostic {
+  kind : DiagnosticKind
+  line : Int
+  id : Int
+  message : String
+}
+
+pub(all) enum DiagnosticKind {
+  MissingClause
+  DeletedBeforeUse
+  NonMonotonicId
+  EmptyProof
+  NoEmptyAddition
+  ExcessiveHints
+}
+
+pub(all) struct Formula {
+  variable_count : Int
+  clauses : Array[Array[Int]]
+}
+pub fn Formula::clause_count(Self) -> Int
+pub fn Formula::clause_size_histogram(Self) -> Map[Int, Int]
+pub fn Formula::contains_empty_clause(Self) -> Bool
+pub fn Formula::literal_occurrences(Self) -> Array[(Int, Int)]
+pub fn Formula::validate(Self) -> Result[Unit, CheckError]
+pub fn Formula::variable_count(Self) -> Int
+pub fn Formula::variables(Self) -> Array[Int]
+
+pub(all) struct FormulaMetrics {
+  variables : Int
+  clauses : Int
+  literals : Int
+  units : Int
+  tautologies : Int
+  minimum_clause_size : Int
+  maximum_clause_size : Int
+}
+
+pub(all) struct LifetimeReport {
+  clauses : Array[ClauseLifetime]
+  total_references : Int
+  references_to_missing_ids : Int
+  references_after_deletion : Int
+  peak_active_clauses : Int
+}
+pub fn LifetimeReport::active_clause_ids(Self) -> Array[Int]
+pub fn LifetimeReport::clause(Self, Int) -> ClauseLifetime?
+pub fn LifetimeReport::deleted_clause_ids(Self) -> Array[Int]
+pub fn LifetimeReport::maximum_lifetime_steps(Self, Int) -> Int
+pub fn LifetimeReport::maximum_uses(Self) -> Int
+pub fn LifetimeReport::mean_lifetime_steps(Self, Int) -> Int
+pub fn LifetimeReport::mean_uses_per_clause(Self) -> Int
+pub fn LifetimeReport::mean_uses_per_used_clause(Self) -> Int
+pub fn LifetimeReport::most_used_clause(Self) -> ClauseLifetime?
+pub fn LifetimeReport::never_used_active_ids(Self) -> Array[Int]
+pub fn LifetimeReport::summary(Self) -> String
+pub fn LifetimeReport::unused_clause_ids(Self) -> Array[Int]
+pub fn LifetimeReport::used_clause_count(Self) -> Int
+
+pub(all) enum LimitViolation {
+  TooManySteps(Int)
+  TooManyClauseLiterals(Int)
+  TooManyHints(Int)
+  ClauseIdTooLarge(Int)
+}
+
+pub(all) struct LiteralIndex {
+  by_literal : Map[Int, Array[Int]]
+  clauses : Map[Int, Array[Int]]
+}
+pub fn LiteralIndex::clause(Self, Int) -> Array[Int]?
+pub fn LiteralIndex::contains_id(Self, Int) -> Bool
+pub fn LiteralIndex::ids_for(Self, Int) -> Array[Int]
+pub fn LiteralIndex::insert(Self, Int, Array[Int]) -> Bool
+pub fn LiteralIndex::literal_count(Self) -> Int
+pub fn LiteralIndex::new(Formula) -> Self
+pub fn LiteralIndex::remove(Self, Int) -> Bool
+pub fn LiteralIndex::size(Self) -> Int
+pub fn LiteralIndex::validate(Self) -> Bool
+
+pub(all) enum LiteralState {
+  True
+  False
+  Unknown
+}
+
+pub(all) struct PreflightReport {
+  ok : Bool
+  diagnostics : Array[Diagnostic]
+  limits_checked : Bool
+  forward_references : Int
+  referenced_ids : Int
+}
+pub fn PreflightReport::diagnostic_count(Self) -> Int
+pub fn PreflightReport::is_ok(Self) -> Bool
+pub fn PreflightReport::summary(Self) -> String
+
+pub(all) struct ProofMetrics {
+  steps : Int
+  additions : Int
+  deletions : Int
+  maximum_id : Int
+  total_clause_literals : Int
+  total_hints : Int
+  maximum_clause_size : Int
+  maximum_hint_size : Int
+  empty_additions : Int
+  rat_steps : Int
+}
+
+pub(all) struct ProofSession {
+  variable_count : Int
+  active : Map[Int, Array[Int]]
+  index : LiteralIndex
+  mut next_id : Int
+  mut additions : Int
+  mut deletions : Int
+}
+pub fn ProofSession::active_clauses(Self) -> Array[(Int, Array[Int])]
+pub fn ProofSession::active_count(Self) -> Int
+pub fn ProofSession::active_ids(Self) -> Array[Int]
+pub fn ProofSession::active_literal_count(Self) -> Int
+pub fn ProofSession::active_tautology_count(Self) -> Int
+pub fn ProofSession::add_clause(Self, Array[Int]) -> Int
+pub fn ProofSession::add_clause_with_id(Self, Int, Array[Int]) -> Bool
+pub fn ProofSession::addition_count(Self) -> Int
+pub fn ProofSession::allocate_id(Self) -> Int
+pub fn ProofSession::contains_empty_clause(Self) -> Bool
+pub fn ProofSession::delete_clause(Self, Int) -> Bool
+pub fn ProofSession::deletion_count(Self) -> Int
+pub fn ProofSession::from_formula(Formula) -> Self
+pub fn ProofSession::get_clause(Self, Int) -> Array[Int]?
+pub fn ProofSession::has_clause(Self, Int) -> Bool
+pub fn ProofSession::ids_for_literal(Self, Int) -> Array[Int]
+pub fn ProofSession::index_is_consistent(Self) -> Bool
+pub fn ProofSession::next_id(Self) -> Int
+pub fn ProofSession::reset_counters(Self) -> Unit
+pub fn ProofSession::snapshot(Self) -> Self
+pub fn ProofSession::variable_count(Self) -> Int
+
+pub(all) struct ProofSlice {
+  start : Int
+  stop : Int
+  steps : Array[ProofStep]
+}
+pub fn ProofSlice::clause_literal_count(Self) -> Int
+pub fn ProofSlice::contains_empty(Self) -> Bool
+pub fn ProofSlice::dependency_graph(Self) -> DependencyGraph
+pub fn ProofSlice::empty_step_count(Self) -> Int
+pub fn ProofSlice::find_id(Self, Int) -> ProofStep?
+pub fn ProofSlice::first_id(Self) -> Int?
+pub fn ProofSlice::hint_count(Self) -> Int
+pub fn ProofSlice::is_empty(Self) -> Bool
+pub fn ProofSlice::last_id(Self) -> Int?
+pub fn ProofSlice::length(Self) -> Int
+pub fn ProofSlice::metrics(Self) -> ProofMetrics
+pub fn ProofSlice::rat_step_count(Self) -> Int
+pub fn ProofSlice::render(Self) -> String
+pub fn ProofSlice::with_limit(Self, Int) -> Self
+
+pub(all) struct ProofStep {
+  id : Int
+  delete : Bool
+  clause : Array[Int]
+  hints : Array[Int]
+  line : Int
+}
+
+pub(all) struct ProofSummary {
+  step_count : Int
+  addition_count : Int
+  deletion_count : Int
+  maximum_id : Int
+  has_empty_addition : Bool
+  rat_candidate_count : Int
+  hint_count : Int
+  deleted_clause_reference_count : Int
+}
+
+pub(all) enum ReplayError {
+  NonMonotonicId(Int)
+  DuplicateClause(Int)
+  UnknownDeletion(Int)
+  InvalidLiteral(Int, Int)
+  MissingFinalEmptyClause
+}
+
+pub(all) struct ReplayResult {
+  final_empty : Bool
+  additions : Int
+  deletions : Int
+  active_clauses : Int
+}
+pub fn ReplayResult::active_count(Self) -> Int
+pub fn ReplayResult::is_unsat_certificate(Self) -> Bool
+
+// Type aliases
+
+// Traits
