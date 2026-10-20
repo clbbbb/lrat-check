@@ -43,7 +43,7 @@ def dimacs(variables, clauses):
 
 def corpus():
     # Original generators: no benchmark data copied from upstream projects.
-    for pigeons in (3, 4, 5):
+    for pigeons in (3, 5, 7):
         holes = pigeons - 1
         variable = lambda p, h: p * holes + h + 1
         clauses = [[variable(p, h) for h in range(holes)] for p in range(pigeons)]
@@ -57,7 +57,7 @@ def corpus():
             for color in (0, 1):
                 clauses.append([-(2*v+color+1), -(2*((v+1) % vertices)+color+1)])
         yield f'odd-cycle-{vertices}', dimacs(2*vertices, clauses)
-    for variables in (3, 4, 5):
+    for variables in (3, 5, 8):
         clauses = [[-(i+1) if value else i+1 for i, value in enumerate(bits)]
                    for bits in itertools.product((0, 1), repeat=variables)]
         yield f'blocked-assignments-{variables}', dimacs(variables, clauses)
@@ -88,7 +88,12 @@ def main():
                 run([solver, '--quiet', '--lrat=' + str(kind.startswith('lrat')).lower(),
                      '--binary=' + str(kind.endswith('binary')).lower(), cnf, proof], allowed=(20,))
                 start = time.perf_counter()
-                run(moon('check', '--format', kind, cnf, proof))
+                command = moon('check', '--format', kind, cnf, proof)
+                rss_file = OUTPUT / f'{name}.{kind}.rss.txt'
+                if Path('/usr/bin/time').exists():
+                    run(['/usr/bin/time', '-f', '%M', '-o', rss_file, *command])
+                else:
+                    run(command)
                 elapsed = time.perf_counter() - start
                 generated = OUTPUT / f'{name}.{kind}.generated.lrat'
                 run(moon('convert', '--from', kind, '--to', 'lrat', cnf, proof, generated))
@@ -109,7 +114,8 @@ def main():
                     run([directory/'drat-trim', cnf, proof])
                 rows.append(dict(case=name, format=kind, input_bytes=proof.stat().st_size,
                                  lrat_bytes=generated.stat().st_size, binary_bytes=binary.stat().st_size,
-                                 cli_elapsed_seconds=round(elapsed, 6)))
+                                 cli_elapsed_seconds=round(elapsed, 6),
+                                 peak_rss_kib=int(rss_file.read_text().strip()) if rss_file.exists() else None))
                 print(f'PASS {name} {kind}', flush=True)
         # SAT is not accepted as UNSAT, independently confirmed by the solver.
         sat = OUTPUT / 'sat.cnf'
@@ -123,7 +129,7 @@ def main():
         run(moon('convert', '--from', 'drat', '--to', 'lrat', ROOT/'examples/paper.cnf', ROOT/'examples/paper.drat', rat))
         run([checker, ROOT/'examples/paper.cnf', rat])
     report = dict(pins=PINS, drat_trim_pin=DRAT_PIN, checked=rows,
-                  timing_scope='Whole release CLI invocation, including Moon/Moonrun startup; not pure algorithm time.')
+                  timing_scope='Whole release CLI invocation, including Moon/Moonrun startup; GNU time maximum RSS in KiB where available. Not pure algorithm time or storage.')
     (OUTPUT/'report.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
     print(f'{len(rows)} real solver proofs passed, plus truncation, SAT and genuine RAT checks.')
 

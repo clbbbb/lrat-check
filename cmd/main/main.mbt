@@ -3,9 +3,12 @@ fn explain(error : @lrat.CheckError) -> String {
   match error {
     BadNumber(line) => "bad integer on line " + line.to_string()
     BadCnf(line) => "invalid DIMACS CNF on line " + line.to_string()
-    BadProof(line) => "invalid LRAT proof on line " + line.to_string()
+    BadProof(line) => "invalid proof at record location " + line.to_string()
     BadHint(line, id) =>
-      "invalid LRAT hint " + id.to_string() + " on line " + line.to_string()
+      "invalid LRAT hint " +
+      id.to_string() +
+      " at record location " +
+      line.to_string()
     MissingEmptyClause => "proof did not derive the empty clause"
     UnsupportedOutputFormat => "output format must be lrat or lrat-binary"
     BadBinary(offset) => "invalid binary proof at byte " + offset.to_string()

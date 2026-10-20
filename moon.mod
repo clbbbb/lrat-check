@@ -19,11 +19,11 @@ repository = "https://github.com/clbbbb/lrat-check"
 
 license = "Apache-2.0"
 
-keywords = [ "sat", "lrat", "proof", "verification", "dimacs" ]
+keywords = [ "sat", "drat", "lrat", "proof", "verification", "binary" ]
 
 preferred_target = "wasm"
 
-description = "Independent LRAT unsatisfiability certificate checker in MoonBit"
+description = "MoonBit DRAT/LRAT verification and checked certificate conversion"
 
 import {
   "moonbitlang/x@0.5.1",
