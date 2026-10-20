@@ -21,6 +21,10 @@ gcc -std=c99 -DLONGTYPE -O2 "$tmp/lrat-check.c" -o "$tmp/lrat-check"
 "$tmp/lrat-check" "$root/examples/paper.cnf" "$root/examples/paper.lrat"
 moon run "$root/cmd/main" -- --convert-drat "$root/examples/paper.cnf" "$root/examples/paper.drat" "$tmp/generated.lrat"
 "$tmp/lrat-check" "$root/examples/paper.cnf" "$tmp/generated.lrat"
+moon run "$root/cmd/main" -- convert --from drat --to lrat-binary "$root/examples/paper.cnf" "$root/examples/paper.drat" "$tmp/generated.clrat"
+moon run "$root/cmd/main" -- check --format lrat-binary "$root/examples/paper.cnf" "$tmp/generated.clrat"
+moon run "$root/cmd/main" -- convert --from lrat-binary --to lrat "$root/examples/paper.cnf" "$tmp/generated.clrat" "$tmp/roundtrip.lrat"
+"$tmp/lrat-check" "$root/examples/paper.cnf" "$tmp/roundtrip.lrat"
 
 if "$tmp/lrat-check" "$root/examples/paper.cnf" "$root/examples/bad.lrat"; then
   echo "Reference checker unexpectedly accepted examples/bad.lrat" >&2

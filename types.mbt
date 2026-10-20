@@ -8,6 +8,7 @@ pub(all) enum CheckError {
   MissingEmptyClause
   BadBinary(Int)
   ResourceLimit(Int)
+  UnsupportedOutputFormat
 }
 
 ///|

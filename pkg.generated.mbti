@@ -42,6 +42,8 @@ pub fn convert_drat(String, String) -> Result[ConversionResult, CheckError]
 
 pub fn convert_drat_steps(Formula, Array[DratStep], ConversionOptions) -> Result[ConversionResult, CheckError]
 
+pub fn convert_proof(String, Bytes, ProofFormat, ProofFormat) -> Result[Bytes, CheckError]
+
 pub fn default_conversion_options() -> ConversionOptions
 
 pub fn deleted_clause_ids(Array[ProofStep]) -> Array[Int]
@@ -57,6 +59,10 @@ pub fn diagnostic_kind_name(DiagnosticKind) -> String
 pub fn diagnostic_summary(Array[Diagnostic]) -> String
 
 pub fn diagnostics_have_errors(Array[Diagnostic]) -> Bool
+
+pub fn encode_binary_drat(Array[DratStep]) -> Result[Bytes, CheckError]
+
+pub fn encode_binary_lrat(Array[ProofStep]) -> Result[Bytes, CheckError]
 
 pub fn formula_clause_ids(Formula) -> Array[Int]
 
@@ -102,15 +108,23 @@ pub fn normalize_clause(Array[Int]) -> Array[Int]
 
 pub fn normalize_formula(Formula) -> Formula
 
+pub fn parse_binary_drat(Bytes) -> Result[Array[DratStep], CheckError]
+
+pub fn parse_binary_lrat(Bytes, Int) -> Result[Array[ProofStep], CheckError]
+
 pub fn parse_cnf(String) -> Result[Formula, CheckError]
 
 pub fn parse_drat(String) -> Result[Array[DratStep], CheckError]
+
+pub fn parse_format(String) -> ProofFormat?
 
 pub fn parse_proof(String) -> Result[Array[ProofStep], CheckError]
 
 pub fn preflight_default(Array[ProofStep]) -> PreflightReport
 
 pub fn preflight_proof(Array[ProofStep], CheckLimits) -> PreflightReport
+
+pub fn process_proof(String, Bytes, ProofFormat, ConversionOptions) -> Result[ConversionResult, CheckError]
 
 pub fn proof_additions(Array[ProofStep]) -> Int
 
@@ -181,6 +195,8 @@ pub fn unit_simplify(Formula) -> Result[Formula, Unit]
 pub fn verify(String, String) -> Result[CheckStats, CheckError]
 
 pub fn verify_formula(Formula, String) -> Result[CheckStats, CheckError]
+
+pub fn verify_input(String, Bytes, ProofFormat) -> Result[CheckStats, CheckError]
 
 pub fn verify_steps(Formula, Array[ProofStep]) -> Result[CheckStats, CheckError]
 
@@ -280,6 +296,7 @@ pub(all) enum CheckError {
   MissingEmptyClause
   BadBinary(Int)
   ResourceLimit(Int)
+  UnsupportedOutputFormat
 }
 
 pub(all) struct CheckLimits {
@@ -443,6 +460,13 @@ pub(all) struct PreflightReport {
 pub fn PreflightReport::diagnostic_count(Self) -> Int
 pub fn PreflightReport::is_ok(Self) -> Bool
 pub fn PreflightReport::summary(Self) -> String
+
+pub(all) enum ProofFormat {
+  LratText
+  LratBinary
+  DratText
+  DratBinary
+}
 
 pub(all) struct ProofMetrics {
   steps : Int

@@ -7,6 +7,7 @@ fn explain(error : @lrat.CheckError) -> String {
     BadHint(line, id) =>
       "invalid LRAT hint " + id.to_string() + " on line " + line.to_string()
     MissingEmptyClause => "proof did not derive the empty clause"
+    UnsupportedOutputFormat => "output format must be lrat or lrat-binary"
     BadBinary(offset) => "invalid binary proof at byte " + offset.to_string()
     ResourceLimit(line) =>
       "conversion work limit reached at record " + line.to_string()
@@ -16,6 +17,102 @@ fn explain(error : @lrat.CheckError) -> String {
 ///|
 fn main {
   let args = @env.args()
+  if args.length() == 6 && args[1] == "check" && args[2] == "--format" {
+    let format = match @lrat.parse_format(args[3]) {
+      Some(value) => value
+      None => {
+        println("Unknown proof format")
+        @sys.exit(2)
+        return
+      }
+    }
+    let cnf = @fs.read_file_to_string(args[4]) catch {
+      _ => {
+        println("Cannot read CNF")
+        @sys.exit(2)
+        return
+      }
+    }
+    let proof = @fs.read_file_to_bytes(args[5]) catch {
+      _ => {
+        println("Cannot read proof")
+        @sys.exit(2)
+        return
+      }
+    }
+    match @lrat.verify_input(cnf, proof, format) {
+      Ok(stats) =>
+        println(
+          "VERIFIED UNSAT: " +
+          stats.additions.to_string() +
+          " additions; " +
+          stats.rat_additions.to_string() +
+          " RAT steps",
+        )
+      Err(error) => {
+        println("FAILED: " + explain(error))
+        @sys.exit(if error is ResourceLimit(_) { 3 } else { 1 })
+      }
+    }
+    return
+  }
+  if args.length() == 9 &&
+    args[1] == "convert" &&
+    args[2] == "--from" &&
+    args[4] == "--to" {
+    let from = match @lrat.parse_format(args[3]) {
+      Some(value) => value
+      None => {
+        println("Unknown input format")
+        @sys.exit(2)
+        return
+      }
+    }
+    let to = match @lrat.parse_format(args[5]) {
+      Some(value) => value
+      None => {
+        println("Unknown output format")
+        @sys.exit(2)
+        return
+      }
+    }
+    if to is DratText || to is DratBinary {
+      println("Output must be LRAT")
+      @sys.exit(2)
+      return
+    }
+    let cnf = @fs.read_file_to_string(args[6]) catch {
+      _ => {
+        println("Cannot read CNF")
+        @sys.exit(2)
+        return
+      }
+    }
+    let proof = @fs.read_file_to_bytes(args[7]) catch {
+      _ => {
+        println("Cannot read proof")
+        @sys.exit(2)
+        return
+      }
+    }
+    match @lrat.convert_proof(cnf, proof, from, to) {
+      Ok(bytes) => {
+        @fs.write_bytes_to_file(args[8], bytes) catch {
+          _ => {
+            println("Cannot write proof")
+            @sys.exit(2)
+            return
+          }
+        }
+        println("VERIFIED UNSAT: wrote LRAT certificate")
+      }
+      Err(error) => {
+        println("FAILED: " + explain(error))
+        @sys.exit(if error is ResourceLimit(_) { 3 } else { 1 })
+      }
+    }
+    return
+  }
   if args.length() == 5 && args[1] == "--convert-drat" {
     let cnf = @fs.read_file_to_string(args[2]) catch {
       _ => {
@@ -102,6 +199,12 @@ fn main {
   }
   if args.length() != 3 {
     println("Usage: lrat-check <formula.cnf> <proof.lrat>")
+    println(
+      "       lrat-check check --format <lrat|lrat-binary|drat|drat-binary> <CNF> <PROOF>",
+    )
+    println(
+      "       lrat-check convert --from <FORMAT> --to <lrat|lrat-binary> <CNF> <PROOF> <OUTPUT>",
+    )
     println("       lrat-check --audit <formula.cnf> <proof.lrat>")
     println("       lrat-check --lifetimes <formula.cnf> <proof.lrat>")
     println(
