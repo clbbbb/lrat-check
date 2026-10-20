@@ -6,6 +6,8 @@ pub(all) enum CheckError {
   BadProof(Int)
   BadHint(Int, Int)
   MissingEmptyClause
+  BadBinary(Int)
+  ResourceLimit(Int)
 }
 
 ///|

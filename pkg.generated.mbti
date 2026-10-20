@@ -38,6 +38,12 @@ pub fn clause_variables(Array[Int]) -> Array[Int]
 
 pub fn combine_preflight_reports(PreflightReport, PreflightReport) -> PreflightReport
 
+pub fn convert_drat(String, String) -> Result[ConversionResult, CheckError]
+
+pub fn convert_drat_steps(Formula, Array[DratStep], ConversionOptions) -> Result[ConversionResult, CheckError]
+
+pub fn default_conversion_options() -> ConversionOptions
+
 pub fn deleted_clause_ids(Array[ProofStep]) -> Array[Int]
 
 pub fn dependency_depth(DependencyGraph, Int) -> Int
@@ -98,6 +104,8 @@ pub fn normalize_formula(Formula) -> Formula
 
 pub fn parse_cnf(String) -> Result[Formula, CheckError]
 
+pub fn parse_drat(String) -> Result[Array[DratStep], CheckError]
+
 pub fn parse_proof(String) -> Result[Array[ProofStep], CheckError]
 
 pub fn preflight_default(Array[ProofStep]) -> PreflightReport
@@ -142,6 +150,8 @@ pub fn render_clause(Array[Int]) -> String
 
 pub fn render_dimacs(Formula) -> String
 
+pub fn render_drat(Array[DratStep]) -> String
+
 pub fn render_proof(Array[ProofStep]) -> String
 
 pub fn replay(String, String) -> Result[ReplayResult, ReplayError]
@@ -171,6 +181,8 @@ pub fn unit_simplify(Formula) -> Result[Formula, Unit]
 pub fn verify(String, String) -> Result[CheckStats, CheckError]
 
 pub fn verify_formula(Formula, String) -> Result[CheckStats, CheckError]
+
+pub fn verify_steps(Formula, Array[ProofStep]) -> Result[CheckStats, CheckError]
 
 // Errors
 
@@ -266,6 +278,8 @@ pub(all) enum CheckError {
   BadProof(Int)
   BadHint(Int, Int)
   MissingEmptyClause
+  BadBinary(Int)
+  ResourceLimit(Int)
 }
 
 pub(all) struct CheckLimits {
@@ -295,6 +309,17 @@ pub fn ClauseLifetime::is_active(Self) -> Bool
 pub fn ClauseLifetime::is_unused(Self) -> Bool
 pub fn ClauseLifetime::lifetime_steps(Self, Int) -> Int
 pub fn ClauseLifetime::was_referenced(Self) -> Bool
+
+pub(all) struct ConversionOptions {
+  max_work : Int
+  honor_unit_deletions : Bool
+}
+
+pub(all) struct ConversionResult {
+  proof : Array[ProofStep]
+  stats : CheckStats
+  work : Int
+}
 
 pub(all) struct DependencyEdge {
   from : Int
@@ -330,6 +355,12 @@ pub(all) enum DiagnosticKind {
   EmptyProof
   NoEmptyAddition
   ExcessiveHints
+}
+
+pub(all) struct DratStep {
+  delete : Bool
+  clause : Array[Int]
+  line : Int
 }
 
 pub(all) struct Formula {

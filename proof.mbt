@@ -175,19 +175,30 @@ pub fn verify_formula(
   formula : Formula,
   proof : String,
 ) -> Result[CheckStats, CheckError] {
+  match parse_proof(proof) {
+    Ok(steps) => verify_steps(formula, steps)
+    Err(error) => Err(error)
+  }
+}
+
+///|
+/// Check parsed records with the same semantics for all supported encodings.
+pub fn verify_steps(
+  formula : Formula,
+  steps : Array[ProofStep],
+) -> Result[CheckStats, CheckError] {
   match formula.validate() {
     Ok(_) => ()
     Err(error) => return Err(error)
   }
   let clauses : Map[Int, Array[Int]] = Map([])
   let literal_index = LiteralIndex::new(formula)
-  let mut initial_empty = false
+  let mut found_empty = false
   for position in 0..<formula.clauses.length() {
-    let id = position + 1
     let clause = formula.clauses[position]
-    clauses[id] = clause
+    clauses[position + 1] = clause
     if clause.length() == 0 {
-      initial_empty = true
+      found_empty = true
     }
   }
   let mut last_id = formula.clauses.length()
@@ -195,33 +206,20 @@ pub fn verify_formula(
   let mut additions = 0
   let mut deletions = 0
   let mut rat_additions = 0
-  let mut found_empty = initial_empty
-  for line in source_lines(proof) {
-    if line.words.length() == 0 || line.words[0] == "c" {
-      continue
-    }
-    if line.words.length() < 3 {
-      return Err(BadProof(line.number))
-    }
-    let id = match decimal(line.words[0], line.number) {
-      Ok(value) => value
-      Err(error) => return Err(error)
-    }
+  for step in steps {
+    let id = step.id
+    let line = step.line
     if id <= 0 || id < previous_record_id || id < last_id {
-      return Err(BadProof(line.number))
+      return Err(BadProof(line))
     }
     previous_record_id = id
-    if line.words[1] == "d" {
-      if line.words[line.words.length() - 1] != "0" {
-        return Err(BadProof(line.number))
+    if step.delete {
+      if step.clause.length() != 0 {
+        return Err(BadProof(line))
       }
-      for index in 2..<(line.words.length() - 1) {
-        let deleted = match decimal(line.words[index], line.number) {
-          Ok(value) => value
-          Err(error) => return Err(error)
-        }
-        if deleted <= 0 || active_clause(clauses, deleted) is None {
-          return Err(BadProof(line.number))
+      for deleted in step.hints {
+        if deleted <= 0 || !clauses.contains(deleted) {
+          return Err(BadProof(line))
         }
         clauses.remove(deleted)
         ignore(literal_index.remove(deleted))
@@ -230,54 +228,36 @@ pub fn verify_formula(
       continue
     }
     if id <= last_id {
-      return Err(BadProof(line.number))
+      return Err(BadProof(line))
     }
-    let clause : Array[Int] = []
     let seen : Map[Int, Bool] = Map([])
-    let hints : Array[Int] = []
-    let mut separator = false
-    let mut ended = false
-    for index in 1..<line.words.length() {
-      let value = match decimal(line.words[index], line.number) {
-        Ok(number) => number
-        Err(error) => return Err(error)
+    for literal in step.clause {
+      if literal == 0 ||
+        literal == -2147483647 - 1 ||
+        seen.contains(literal) ||
+        seen.contains(-literal) {
+        return Err(BadProof(line))
       }
-      if value == 0 {
-        if !separator {
-          separator = true
-        } else if index == line.words.length() - 1 {
-          ended = true
-        } else {
-          return Err(BadProof(line.number))
-        }
-      } else if !separator {
-        if value == -2147483647 - 1 ||
-          seen.contains(value) ||
-          seen.contains(-value) {
-          return Err(BadProof(line.number))
-        }
-        clause.push(value)
-        seen[value] = true
-      } else {
-        hints.push(value)
-      }
+      seen[literal] = true
     }
-    if !ended {
-      return Err(BadProof(line.number))
+    for hint in step.hints {
+      if hint == 0 || hint == -2147483647 - 1 {
+        return Err(BadProof(line))
+      }
     }
     let rat = match
-      verify_addition(clauses, literal_index, clause, hints, line.number) {
+      verify_addition(clauses, literal_index, step.clause, step.hints, line) {
       Ok(value) => value
       Err(error) => return Err(error)
     }
     if rat {
       rat_additions += 1
     }
-    clauses[id] = clause
-    ignore(literal_index.insert(id, clause))
+    clauses[id] = step.clause.copy()
+    ignore(literal_index.insert(id, step.clause))
     last_id = id
     additions += 1
-    if clause.length() == 0 {
+    if step.clause.length() == 0 {
       found_empty = true
     }
   }

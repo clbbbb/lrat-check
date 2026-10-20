@@ -19,6 +19,8 @@ curl --fail --silent --show-error --location "$source_url" --output "$tmp/lrat-c
 gcc -std=c99 -DLONGTYPE -O2 "$tmp/lrat-check.c" -o "$tmp/lrat-check"
 
 "$tmp/lrat-check" "$root/examples/paper.cnf" "$root/examples/paper.lrat"
+moon run "$root/cmd/main" -- --convert-drat "$root/examples/paper.cnf" "$root/examples/paper.drat" "$tmp/generated.lrat"
+"$tmp/lrat-check" "$root/examples/paper.cnf" "$tmp/generated.lrat"
 
 if "$tmp/lrat-check" "$root/examples/paper.cnf" "$root/examples/bad.lrat"; then
   echo "Reference checker unexpectedly accepted examples/bad.lrat" >&2
