@@ -97,10 +97,10 @@ def main():
                 run(moon('convert', '--from', 'lrat', '--to', 'lrat-binary', cnf, generated, binary))
                 # A different implementation consumes our binary encoding.
                 # lrat-trim parses full binary LRAT but does not check general
-                # negative RAT antecedents. Decode without trimming, then use
+                # negative RAT antecedents. Decode and trim without checking, then use
                 # the full RAT checker on its independently decoded text.
                 decoded = OUTPUT / f'{name}.{kind}.reference-decoded.lrat'
-                run([trimmer, '-q', '--no-check', '--no-trim', '--ascii', cnf, binary, decoded], allowed=(0, 20))
+                run([trimmer, '-q', '--no-check', '--ascii', cnf, binary, decoded], allowed=(0, 20))
                 run([checker, cnf, decoded])
                 truncated = OUTPUT / 'truncated.clrat'
                 truncated.write_bytes(binary.read_bytes()[:-1])

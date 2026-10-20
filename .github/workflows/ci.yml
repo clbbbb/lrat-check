@@ -22,8 +22,12 @@ jobs:
           Set-ExecutionPolicy Bypass -Scope Process -Force
           irm https://cli.moonbitlang.com/install/powershell.ps1 | iex
       - name: Add MoonBit to PATH
-        shell: bash
+        if: runner.os == 'Linux'
         run: echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Add MoonBit to Windows PATH
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: '"$env:USERPROFILE\.moon\bin" >> $env:GITHUB_PATH'
       - name: Resolve MoonBit dependencies
         run: moon update
       - name: Check
