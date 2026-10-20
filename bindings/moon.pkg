@@ -1,0 +1,9 @@
+import {
+  "clbbbb/lrat-check" @lrat,
+}
+
+options(
+  link: {
+    "js": { "exports": [ "verify_json", "convert_json" ], "format": "esm" },
+  },
+)

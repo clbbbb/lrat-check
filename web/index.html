@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LratCheck browser example</title>
+<style>body{font:16px system-ui;max-width:760px;margin:40px auto;padding:0 20px}textarea{display:block;width:100%;height:110px;margin:8px 0 18px}button{padding:8px 16px}pre{white-space:pre-wrap}</style>
+<h1>LratCheck</h1>
+<p>Check a DIMACS formula and a textual or binary LRAT/DRAT proof locally.</p>
+<label>DIMACS CNF<textarea id="cnf">p cnf 1 2
+1 0
+-1 0
+</textarea></label>
+<label>Format <select id="format"><option>drat</option><option>drat-binary</option><option>lrat</option><option>lrat-binary</option></select></label>
+<label>Proof text<textarea id="proof">0
+</textarea></label>
+<label>Or load a proof file <input type="file" id="file"></label>
+<p><button id="check">Verify</button></p><pre id="result" aria-live="polite"></pre>
+<script type="module">
+import { verify_json } from '../_build/js/release/build/bindings/bindings.js';
+document.querySelector('#check').addEventListener('click', async () => {
+  const file = document.querySelector('#file').files[0];
+  const proof = file ? new Uint8Array(await file.arrayBuffer()) : new TextEncoder().encode(document.querySelector('#proof').value);
+  const result = JSON.parse(verify_json(document.querySelector('#cnf').value, proof, document.querySelector('#format').value));
+  document.querySelector('#result').textContent = JSON.stringify(result, null, 2);
+});
+</script>
+</html>

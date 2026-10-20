@@ -1,0 +1,15 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "clbbbb/lrat-check/bindings"
+
+// Values
+pub fn convert_json(String, Bytes, String) -> String
+
+pub fn verify_json(String, Bytes, String) -> String
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits

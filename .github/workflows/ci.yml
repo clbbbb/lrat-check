@@ -6,12 +6,23 @@ on:
 
 jobs:
   check-test-build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - name: Install MoonBit
+        if: runner.os == 'Linux'
         run: curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+      - name: Install MoonBit on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy Bypass -Scope Process -Force
+          irm https://cli.moonbitlang.com/install/powershell.ps1 | iex
       - name: Add MoonBit to PATH
+        shell: bash
         run: echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
       - name: Resolve MoonBit dependencies
         run: moon update
@@ -22,4 +33,33 @@ jobs:
       - name: Build
         run: moon build --release --deny-warn
       - name: Cross-check with drat-trim LRAT checker
+        if: runner.os == 'Linux'
         run: bash scripts/cross_check_lrat.sh
+      - name: JavaScript tests and exported bindings
+        run: |
+          moon test --target js --deny-warn
+          moon build --target js --release --deny-warn bindings
+          node scripts/test_js.mjs
+      - name: Run conversion example
+        run: |
+          moon run cmd/main -- convert --from drat --to lrat-binary examples/paper.cnf examples/paper.drat _build/example.clrat
+          moon run cmd/main -- check --format lrat-binary examples/paper.cnf _build/example.clrat
+
+  solver-interop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install MoonBit
+        run: curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+      - name: Add MoonBit to PATH
+        run: echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Resolve dependencies
+        run: moon update
+      - name: Real solver and independent checker interoperability
+        run: python3 scripts/solver_interop.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: solver-interop
+          path: _build/interop/
