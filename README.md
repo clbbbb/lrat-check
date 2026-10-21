@@ -129,7 +129,8 @@ checker or solver source is included. Reference tools:
 upstream licenses in the temporary build directories. Pins are recorded in
 `scripts/solver_interop.py` and `scripts/cross_check_lrat.sh`.
 
-The public module is `clbbbb/lrat-check`. The DRAT/binary/multi-platform changes
-are currently on GitHub and are not part of the previously published `0.1.0`
-Mooncakes package. See [review response](docs/review-response.md) for the scope
-of this revision and the remaining release steps.
+The public module is `clbbbb/lrat-check`. Version `0.2.0` includes DRAT
+verification and checked LRAT certificate generation, binary DRAT/LRAT
+interchange, and JavaScript bindings. The earlier `0.1.0` package does not
+include these extensions. See [review response](docs/review-response.md)
+for the scope and validation of this revision.
